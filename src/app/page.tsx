@@ -209,17 +209,21 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
   );
 };
 
-// Agregar nuevos componentes de animación
-const FloatingElement = ({ children, delay = 0 }) => (
+interface FloatingElementProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
+const FloatingElement = ({ children, delay = 0 }: FloatingElementProps) => (
   <motion.div
     initial={{ y: 0 }}
     animate={{ 
       y: [0, -10, 0],
     }}
     transition={{
-      duration: 3,
-      delay,
+      duration: 2,
       repeat: Infinity,
+      delay: delay,
       ease: "easeInOut"
     }}
   >
@@ -227,44 +231,47 @@ const FloatingElement = ({ children, delay = 0 }) => (
   </motion.div>
 );
 
-const GlowingBorder = ({ children }) => (
+interface GlowingBorderProps {
+  children: React.ReactNode;
+}
+
+const GlowingBorder = ({ children }: GlowingBorderProps) => (
   <motion.div
-    className="relative"
+    className="relative p-[1px] rounded-xl overflow-hidden"
     whileHover={{ scale: 1.02 }}
     transition={{ duration: 0.2 }}
   >
     <motion.div
-      className="absolute inset-0 rounded-xl"
+      className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
       animate={{
-        boxShadow: [
-          "0 0 0 0 rgba(59, 130, 246, 0)",
-          "0 0 0 10px rgba(59, 130, 246, 0.1)",
-          "0 0 0 0 rgba(59, 130, 246, 0)"
-        ]
+        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
       }}
       transition={{
-        duration: 2,
+        duration: 5,
         repeat: Infinity,
-        ease: "easeInOut"
+        ease: "linear"
       }}
     />
-    {children}
+    <div className="relative bg-gray-900 rounded-xl p-6">
+      {children}
+    </div>
   </motion.div>
 );
 
-const TextGradient = ({ children }) => (
+interface TextGradientProps {
+  children: React.ReactNode;
+}
+
+const TextGradient = ({ children }: TextGradientProps) => (
   <motion.span
-    className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent"
+    className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
     animate={{
-      backgroundPosition: ["0%", "100%", "0%"]
+      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
     }}
     transition={{
       duration: 5,
       repeat: Infinity,
       ease: "linear"
-    }}
-    style={{
-      backgroundSize: "200% auto"
     }}
   >
     {children}
