@@ -5,14 +5,18 @@ import { motion } from 'framer-motion';
 import { useAccount } from 'wagmi';
 
 interface Milestone {
-  id: number;
+  id: string;
   title: string;
   description: string;
   requirement: string;
-  reward: number;
+  reward: {
+    amount: number;
+    token: string;
+  };
   completed: boolean;
   progress: number;
   total: number;
+  claimed: boolean;
 }
 
 interface EngagementStats {
@@ -33,44 +37,60 @@ export const EngagementSystem = () => {
 
   const [milestones, setMilestones] = useState<Milestone[]>([
     {
-      id: 1,
+      id: "1",
       title: "Primer Video",
       description: "Sube tu primer video educativo",
       requirement: "1 video",
-      reward: 10,
+      reward: {
+        amount: 10,
+        token: "STUDENT"
+      },
       completed: false,
       progress: 0,
-      total: 1
+      total: 1,
+      claimed: false
     },
     {
-      id: 2,
+      id: "2",
       title: "5 Videos",
       description: "Sube 5 videos educativos",
       requirement: "5 videos",
-      reward: 50,
+      reward: {
+        amount: 50,
+        token: "STUDENT"
+      },
       completed: false,
       progress: 0,
-      total: 5
+      total: 5,
+      claimed: false
     },
     {
-      id: 3,
+      id: "3",
       title: "25 Likes",
       description: "Consigue 25 likes en total",
       requirement: "25 likes",
-      reward: 25,
+      reward: {
+        amount: 25,
+        token: "STUDENT"
+      },
       completed: false,
       progress: 0,
-      total: 25
+      total: 25,
+      claimed: false
     },
     {
-      id: 4,
+      id: "4",
       title: "100 Views",
       description: "Alcanza 100 visualizaciones en total",
       requirement: "100 views",
-      reward: 30,
+      reward: {
+        amount: 30,
+        token: "STUDENT"
+      },
       completed: false,
       progress: 0,
-      total: 100
+      total: 100,
+      claimed: false
     }
   ]);
 
@@ -92,14 +112,14 @@ export const EngagementSystem = () => {
         setMilestones(prev => prev.map(milestone => {
           let progress = 0;
           switch (milestone.id) {
-            case 1:
-            case 2:
+            case "1":
+            case "2":
               progress = Math.min(stats.totalVideos, milestone.total);
               break;
-            case 3:
+            case "3":
               progress = Math.min(stats.totalLikes, milestone.total);
               break;
-            case 4:
+            case "4":
               progress = Math.min(stats.totalViews, milestone.total);
               break;
           }
@@ -117,13 +137,13 @@ export const EngagementSystem = () => {
     fetchEngagementData();
   }, [address]);
 
-  const handleClaimReward = async (milestoneId: number) => {
+  const handleClaimReward = async (milestoneId: string) => {
     try {
       // Aquí iría la lógica para reclamar la recompensa
       // Por ahora solo actualizamos el estado local
       setMilestones(prev => prev.map(milestone => 
         milestone.id === milestoneId 
-          ? { ...milestone, completed: true }
+          ? { ...milestone, completed: true, claimed: true }
           : milestone
       ));
     } catch (error) {
@@ -178,7 +198,7 @@ export const EngagementSystem = () => {
                 <p className="text-gray-400 text-sm">{milestone.description}</p>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-blue-400">{milestone.reward} $STUDENT</div>
+                <div className="text-lg font-bold text-blue-400">{milestone.reward.amount} {milestone.reward.token}</div>
                 <div className="text-sm text-gray-400">{milestone.requirement}</div>
               </div>
             </div>
@@ -201,7 +221,7 @@ export const EngagementSystem = () => {
                   onClick={() => handleClaimReward(milestone.id)}
                   className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                 >
-                  Reclamar Recompensa
+                  Reclamar recompensa
                 </button>
               )}
             </div>
