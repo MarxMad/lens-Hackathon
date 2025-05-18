@@ -278,8 +278,12 @@ const TextGradient = ({ children }: TextGradientProps) => (
   </motion.span>
 );
 
-// Nuevos componentes de animación
-const ParallaxSection = ({ children, speed = 0.5 }) => {
+interface ParallaxSectionProps {
+  children: React.ReactNode;
+  speed?: number;
+}
+
+const ParallaxSection = ({ children, speed = 0.5 }: ParallaxSectionProps) => {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, 100 * speed]);
 
@@ -290,18 +294,12 @@ const ParallaxSection = ({ children, speed = 0.5 }) => {
   );
 };
 
-const ScrollProgress = () => {
-  const { scrollYProgress } = useScroll();
-  
-  return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 origin-left z-50"
-      style={{ scaleX: scrollYProgress }}
-    />
-  );
-};
+interface AnimatedSectionProps {
+  children: React.ReactNode;
+  delay?: number;
+}
 
-const AnimatedSection = ({ children, delay = 0 }) => {
+const AnimatedSection = ({ children, delay = 0 }: AnimatedSectionProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -314,7 +312,12 @@ const AnimatedSection = ({ children, delay = 0 }) => {
   );
 };
 
-const HoverCard = ({ children, delay = 0 }) => {
+interface HoverCardProps {
+  children: React.ReactNode;
+  delay?: number;
+}
+
+const HoverCard = ({ children, delay = 0 }: HoverCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -322,7 +325,6 @@ const HoverCard = ({ children, delay = 0 }) => {
       whileHover={{ 
         scale: 1.05,
         boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        transition: { duration: 0.2 }
       }}
       transition={{ duration: 0.5, delay }}
       className="relative group"
@@ -341,6 +343,17 @@ const HoverCard = ({ children, delay = 0 }) => {
       />
       {children}
     </motion.div>
+  );
+};
+
+const ScrollProgress = () => {
+  const { scrollYProgress } = useScroll();
+  
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 origin-left z-50"
+      style={{ scaleX: scrollYProgress }}
+    />
   );
 };
 
@@ -499,9 +512,11 @@ export default function Home() {
                               <motion.div
                                 initial={{ scale: 0 }}
                                 whileInView={{ scale: 1 }}
-                                transition={{ delay: index * 0.2 + 0.2 }}
                                 whileHover={{ rotate: 360 }}
-                                transition={{ duration: 0.5 }}
+                                transition={{ 
+                                  duration: 0.5,
+                                  delay: index * 0.2 + 0.2 
+                                }}
                               >
                                 <svg className="w-12 h-12 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
@@ -610,9 +625,11 @@ export default function Home() {
                               <motion.div
                                 initial={{ rotate: -180, opacity: 0 }}
                                 whileInView={{ rotate: 0, opacity: 1 }}
-                                transition={{ delay: index * 0.2 + 0.2 }}
                                 whileHover={{ rotate: 360 }}
-                                transition={{ duration: 0.5 }}
+                                transition={{ 
+                                  duration: 0.5,
+                                  delay: index * 0.2 + 0.2 
+                                }}
                               >
                                 <svg className="w-12 h-12 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={benefit.icon} />
@@ -680,9 +697,11 @@ export default function Home() {
                                 <motion.div
                                   initial={{ scale: 0, rotate: -180 }}
                                   whileInView={{ scale: 1, rotate: 0 }}
-                                  transition={{ delay: index * 0.2 + 0.2 }}
                                   whileHover={{ rotate: 360 }}
-                                  transition={{ duration: 0.5 }}
+                                  transition={{ 
+                                    duration: 0.5,
+                                    delay: index * 0.2 + 0.2 
+                                  }}
                                   className="absolute -top-4 -left-4 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold"
                                 >
                                   {step.step}
