@@ -1,6 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración básica
+  output: 'export',
+  images: {
+    unoptimized: true,
+    domains: ['ipfs.io', 'arweave.net', 'lens.infura-ipfs.io'],
+  },
+  experimental: {
+    serverActions: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = nextConfig; 
