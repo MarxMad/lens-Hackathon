@@ -159,8 +159,11 @@ export const VideoFeed = ({ videos }: VideoFeedProps) => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <Loader text="Cargando videos..." />
+      <div className="h-screen flex items-center justify-center bg-black">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-32 h-32 border-8 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-2xl font-bold text-white">Cargando videos...</p>
+        </div>
       </div>
     );
   }
@@ -197,7 +200,7 @@ export const VideoFeed = ({ videos }: VideoFeedProps) => {
                   />
 
                   {/* Overlay de información */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                  <div className="absolute bottom-0 left-0 right-0 p-6 pb-24 bg-gradient-to-t from-black/80 to-transparent">
                     <div className="flex items-center space-x-4 mb-4">
                       <img
                         src={video.author.avatar}
