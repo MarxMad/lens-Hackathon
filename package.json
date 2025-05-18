@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@lens-protocol/client": "^2.3.2",
+    "@lens-protocol/client": "^0.0.0-canary-20250515092635",
     "@lens-protocol/react": "^2.3.2",
     "@lens-protocol/react-web": "^2.3.2",
     "@tanstack/react-query": "^5.76.1",
@@ -18,11 +18,11 @@
     "autoprefixer": "^10.4.18",
     "connectkit": "^1.9.0",
     "framer-motion": "^12.12.1",
-    "next": "14.1.0",
+    "next": "^15.3.2",
     "pino-pretty": "^10.3.1",
     "postcss": "^8.4.35",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
     "react-tsparticles": "^2.12.2",
     "tailwindcss": "^3.4.1",

@@ -1,34 +1,20 @@
 "use client";
 
-import React, { ReactNode } from "react";
-import { BaseProvider, production } from '@lens-protocol/react';
+import React, { ReactNode, createContext, useContext } from "react";
 
 interface LensProviderWrapperProps {
   children: ReactNode;
 }
 
-const lensConfig = {
-  environment: production,
-  storage: {
-    getItem: (key: string) => (typeof window !== "undefined" ? window.localStorage.getItem(key) : null),
-    setItem: (key: string, value: string) => (typeof window !== "undefined" ? window.localStorage.setItem(key, value) : undefined),
-    removeItem: (key: string) => (typeof window !== "undefined" ? window.localStorage.removeItem(key) : undefined),
-  },
-  bindings: {
-    storage: {
-      getItem: (key: string) => (typeof window !== "undefined" ? window.localStorage.getItem(key) : null),
-      setItem: (key: string, value: string) => (typeof window !== "undefined" ? window.localStorage.setItem(key, value) : undefined),
-      removeItem: (key: string) => (typeof window !== "undefined" ? window.localStorage.removeItem(key) : undefined),
-    },
-    getSigner: async () => { throw new Error("getSigner no implementado"); },
-    getProvider: () => { throw new Error("getProvider no implementado"); },
-  },
-};
-
+// Proveedor vacío, ya que solo se usará fetch manual
 export function LensProviderWrapper({ children }: LensProviderWrapperProps) {
-  return (
-    <BaseProvider config={lensConfig}>
-      {children}
-    </BaseProvider>
-  );
-} 
+  return <>{children}</>;
+}
+
+// Contexto vacío para compatibilidad
+const LensContext = createContext(null);
+export const useLensClient = () => useContext(LensContext);
+
+export const LensProvider = ({ children }: { children: React.ReactNode }) => (
+  <LensContext.Provider value={null}>{children}</LensContext.Provider>
+); 

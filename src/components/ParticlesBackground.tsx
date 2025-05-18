@@ -43,14 +43,14 @@ export function ParticlesBackground() {
               quantity: 4,
             },
             repulse: {
-              distance: 200,
+              distance: 100,
               duration: 0.4,
             },
           },
         },
         particles: {
           color: {
-            value: "#60a5fa",
+            value: ["#60a5fa", "#8b5cf6", "#ec4899", "#3b82f6"],
           },
           links: {
             color: "#60a5fa",
@@ -65,8 +65,8 @@ export function ParticlesBackground() {
             outModes: {
               default: "bounce",
             },
-            random: false,
-            speed: 1,
+            random: true,
+            speed: 2,
             straight: false,
           },
           number: {
@@ -74,16 +74,26 @@ export function ParticlesBackground() {
               enable: true,
               area: 800,
             },
-            value: 100,
+            value: 80,
           },
           opacity: {
             value: 0.7,
+            animation: {
+              enable: true,
+              speed: 1,
+              minimumValue: 0.1,
+            },
           },
           shape: {
-            type: "circle",
+            type: ["circle", "triangle"],
           },
           size: {
-            value: { min: 1, max: 3 },
+            value: { min: 1, max: 5 },
+            animation: {
+              enable: true,
+              speed: 2,
+              minimumValue: 0.1,
+            },
           },
         },
         detectRetina: true,

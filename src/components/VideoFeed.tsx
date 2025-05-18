@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useAccount } from 'wagmi';
+import { Loader } from "./Loader";
 
 interface Video {
   id: string;
@@ -37,94 +38,20 @@ interface LeaderboardUser {
   };
 }
 
-export const VideoFeed = () => {
+interface VideoFeedProps {
+  videos: Video[];
+}
+
+export const VideoFeed = ({ videos }: VideoFeedProps) => {
   const { address } = useAccount();
   const [activeTab, setActiveTab] = useState<'feed' | 'leaderboard'>('feed');
-  const [videos, setVideos] = useState<Video[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const controls = useAnimation();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Aquí iría la lógica para obtener los videos y el leaderboard
-        // Por ahora usamos datos de ejemplo
-        setVideos([
-          {
-            id: "1",
-            title: "Introducción a Web3",
-            description: "Aprende los conceptos básicos de Web3 y blockchain",
-            videoUrl: "https://example.com/video1",
-            author: {
-              name: "Juan Pérez",
-              handle: "juan.lens",
-              avatar: "https://picsum.photos/100/100"
-            },
-            stats: {
-              likes: 45,
-              dislikes: 2,
-              views: 234,
-              comments: 12
-            },
-            timestamp: "2 horas atrás"
-          },
-          {
-            id: "2",
-            title: "Smart Contracts 101",
-            description: "Todo lo que necesitas saber sobre smart contracts",
-            videoUrl: "https://example.com/video2",
-            author: {
-              name: "María García",
-              handle: "maria.lens",
-              avatar: "https://picsum.photos/100/100"
-            },
-            stats: {
-              likes: 32,
-              dislikes: 1,
-              views: 189,
-              comments: 8
-            },
-            timestamp: "5 horas atrás"
-          }
-        ]);
-
-        setLeaderboard([
-          {
-            rank: 1,
-            name: "Juan Pérez",
-            handle: "juan.lens",
-            avatar: "https://picsum.photos/100/100",
-            stats: {
-              videos: 15,
-              likes: 450,
-              studentBalance: 250
-            }
-          },
-          {
-            rank: 2,
-            name: "María García",
-            handle: "maria.lens",
-            avatar: "https://picsum.photos/100/100",
-            stats: {
-              videos: 12,
-              likes: 380,
-              studentBalance: 200
-            }
-          }
-        ]);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSwipe = useCallback((direction: number) => {
     if (direction > 0 && currentIndex > 0) {
@@ -142,35 +69,25 @@ export const VideoFeed = () => {
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEnd = e.changedTouches[0].clientY;
-    const diff = touchStart - touchEnd;
-    
+    const diff = touchEnd - touchStart;
     if (Math.abs(diff) > 50) {
-      handleSwipe(diff > 0 ? -1 : 1);
+      // Swipe hacia arriba: siguiente video (abajo en la lista)
+      if (diff < 0 && currentIndex < videos.length - 1) {
+        setDirection(1);
+        setCurrentIndex(prev => prev + 1);
+      }
+      // Swipe hacia abajo: video anterior (arriba en la lista)
+      else if (diff > 0 && currentIndex > 0) {
+        setDirection(-1);
+        setCurrentIndex(prev => prev - 1);
+      }
     }
   };
 
   const handleLike = async (videoId: string) => {
     try {
-      setVideos(prev => prev.map(video => {
-        if (video.id === videoId) {
-          const wasLiked = video.userLiked;
-          const wasDisliked = video.userDisliked;
-          
-          return {
-            ...video,
-            userLiked: !wasLiked,
-            userDisliked: false,
-            stats: {
-              ...video.stats,
-              likes: wasLiked ? video.stats.likes - 1 : video.stats.likes + 1,
-              dislikes: wasDisliked ? video.stats.dislikes - 1 : video.stats.dislikes
-            }
-          };
-        }
-        return video;
-      }));
-
-      // Aquí iría la lógica para actualizar en la blockchain
+      // Implement the logic to update the video's userLiked and userDisliked status
+      // and the stats in the blockchain
       await controls.start({
         scale: [1, 1.2, 1],
         transition: { duration: 0.3 }
@@ -182,26 +99,8 @@ export const VideoFeed = () => {
 
   const handleDislike = async (videoId: string) => {
     try {
-      setVideos(prev => prev.map(video => {
-        if (video.id === videoId) {
-          const wasDisliked = video.userDisliked;
-          const wasLiked = video.userLiked;
-          
-          return {
-            ...video,
-            userDisliked: !wasDisliked,
-            userLiked: false,
-            stats: {
-              ...video.stats,
-              dislikes: wasDisliked ? video.stats.dislikes - 1 : video.stats.dislikes + 1,
-              likes: wasLiked ? video.stats.likes - 1 : video.stats.likes
-            }
-          };
-        }
-        return video;
-      }));
-
-      // Aquí iría la lógica para actualizar en la blockchain
+      // Implement the logic to update the video's userDisliked status
+      // and the stats in the blockchain
       await controls.start({
         scale: [1, 1.2, 1],
         transition: { duration: 0.3 }
@@ -211,16 +110,66 @@ export const VideoFeed = () => {
     }
   };
 
+  // Log de depuración para ver los videos que recibe el feed
+  console.log('Videos en el feed:', videos);
+
+  useEffect(() => {
+    if (videos.length > 0) {
+      setLoading(false);
+    }
+  }, [videos]);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > 30) {
+        if (e.deltaY > 0 && currentIndex > 0) {
+          setDirection(-1);
+          setCurrentIndex(prev => prev - 1);
+        } else if (e.deltaY < 0 && currentIndex < videos.length - 1) {
+          setDirection(1);
+          setCurrentIndex(prev => prev + 1);
+        }
+      }
+    };
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [currentIndex, videos.length]);
+
+  // Navegación con flechas del teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' && currentIndex > 0) {
+        setDirection(-1);
+        setCurrentIndex(prev => prev - 1);
+      } else if (e.key === 'ArrowUp' && currentIndex < videos.length - 1) {
+        setDirection(1);
+        setCurrentIndex(prev => prev + 1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, videos.length]);
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <Loader text="Cargando videos..." />
       </div>
     );
   }
 
   return (
-    <div className="h-screen relative overflow-hidden bg-black">
+    <div
+      ref={containerRef}
+      className="h-screen relative overflow-hidden bg-black"
+    >
       <AnimatePresence initial={false} custom={direction}>
         {videos.map((video, index) => {
           if (index === currentIndex) {
