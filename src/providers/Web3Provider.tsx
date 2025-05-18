@@ -1,10 +1,11 @@
 "use client";
 
+import { ConnectKitProvider } from 'connectkit';
 import { WagmiConfig, createConfig } from 'wagmi';
 import { mainnet, polygon } from 'wagmi/chains';
 import { http } from 'viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
+import { getDefaultConfig } from 'connectkit';
 
 // Crear una instancia de QueryClient
 const queryClient = new QueryClient();
@@ -39,29 +40,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
             hideNoWalletCTA: false,
             hideRecentBadge: false,
             disableSiweRedirect: true,
-            // Configuración adicional para manejar errores
-            walletConnectCTA: 'link',
-            // Aumentar el tiempo de expiración
-            walletConnectTimeout: 60000, // 60 segundos
-            // Configuración de reintentos
-            retryOnMount: true,
-            retryCount: 3,
-            // Configuración de caché
-            cacheConnectors: true,
-            // Configuración de persistencia
-            persistConnectors: true,
-            // Configuración de eventos
-            events: {
-              onConnect: (data: unknown) => {
-                console.log('Wallet connected:', data);
-              },
-              onDisconnect: () => {
-                console.log('Wallet disconnected');
-              },
-              onError: (error: unknown) => {
-                console.error('Wallet error:', error);
-              }
-            }
+            walletConnectCTA: 'link'
           }}
         >
           {children}
