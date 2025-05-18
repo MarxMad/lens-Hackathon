@@ -1,94 +1,224 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAccount } from "wagmi";
-import { useCreatePost } from "@lens-protocol/react";
+import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
+import { Web3Storage } from 'web3.storage';
+import { useAccount } from 'wagmi';
 
-export function VideoUpload() {
+interface VideoUploadProps {
+  onUploadComplete: (videoData: {
+    title: string;
+    description: string;
+    videoUrl: string;
+    thumbnailUrl: string;
+  }) => void;
+}
+
+export const VideoUpload = ({ onUploadComplete }: VideoUploadProps) => {
   const { address } = useAccount();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const { execute: createPost, loading } = useCreatePost();
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!videoFile || !title || !description) return;
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'video/*': ['.mp4', '.mov', '.avi']
+    },
+    maxSize: 100 * 1024 * 1024, // 100MB
+    multiple: false
+  });
+
+  const handleUpload = async () => {
+    if (!selectedFile || !title || !description) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
+
     try {
-      // TODO: Implementar la lógica de subida de video
-      // 1. Subir el video a IPFS
-      // 2. Crear el post en Lens con el hash del video
-      console.log("Subiendo video...");
+      // 1. Subir video a IPFS
+      const client = new Web3Storage({ token: process.env.NEXT_PUBLIC_WEB3STORAGE_TOKEN || '' });
+      
+      const videoCid = await client.put([selectedFile], {
+        onRootCidReady: (cid) => {
+          console.log('Uploading video to IPFS:', cid);
+        },
+        onStoredChunk: (bytes) => {
+          setUploadProgress((bytes / selectedFile.size) * 100);
+        }
+      });
+
+      const videoUrl = `https://${videoCid}.ipfs.w3s.link/${selectedFile.name}`;
+
+      // 2. Crear thumbnail (en una implementación real, generaríamos un thumbnail)
+      const thumbnailUrl = previewUrl || '';
+
+      // 3. Publicar en Lens
+      const response = await fetch('https://api.lens.dev', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer F8V9lH-O6-zt3n_Ofkt0yzvWY6D7Sjk20x'
+        },
+        body: JSON.stringify({
+          query: `
+            mutation CreatePost {
+              createPostTypedData(request: {
+                profileId: "${address}"
+                contentURI: "${videoUrl}"
+                collectModule: {
+                  freeCollectModule: {
+                    followerOnly: false
+                  }
+                }
+                referenceModule: {
+                  followerOnlyReferenceModule: false
+                }
+              }) {
+                id
+                expiresAt
+                typedData {
+                  types {
+                    PostWithSig {
+                      name
+                      type
+                    }
+                  }
+                  domain {
+                    name
+                    chainId
+                    version
+                    verifyingContract
+                  }
+                  value {
+                    nonce
+                    deadline
+                    profileId
+                    contentURI
+                    collectModule
+                    collectModuleInitData
+                    referenceModule
+                    referenceModuleInitData
+                  }
+                }
+              }
+            }
+          `
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.data?.createPostTypedData) {
+        onUploadComplete({
+          title,
+          description,
+          videoUrl,
+          thumbnailUrl
+        });
+      }
     } catch (error) {
-      console.error("Error al subir el video:", error);
+      console.error('Error uploading video:', error);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4">Sube tu Video</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Título
-          </label>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6"
+    >
+      <h2 className="text-2xl font-bold text-white mb-6">Subir Video Educativo</h2>
+
+      <div className="space-y-6">
+        {/* Título y Descripción */}
+        <div className="space-y-4">
           <input
             type="text"
-            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+            placeholder="Título del video"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-gray-500"
           />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Descripción
-          </label>
           <textarea
-            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
+            placeholder="Descripción del video"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-gray-500 h-24"
           />
         </div>
 
-        <div>
-          <label htmlFor="video" className="block text-sm font-medium text-gray-700">
-            Video
-          </label>
-          <input
-            type="file"
-            id="video"
-            accept="video/*"
-            onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-            className="mt-1 block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isUploading || loading}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300"
+        {/* Área de Drop */}
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+            isDragActive ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'
+          }`}
         >
-          {isUploading ? "Subiendo..." : loading ? "Procesando..." : "Subir Video"}
+          <input {...getInputProps()} />
+          {previewUrl ? (
+            <div className="space-y-4">
+              <video
+                src={previewUrl}
+                className="w-full max-h-64 rounded-lg"
+                controls
+              />
+              <p className="text-gray-400">Haz clic o arrastra otro video para reemplazar</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-6xl mb-4">🎥</div>
+              <p className="text-gray-400">
+                {isDragActive
+                  ? "Suelta el video aquí"
+                  : "Arrastra un video o haz clic para seleccionar"}
+              </p>
+              <p className="text-sm text-gray-500">
+                Formatos soportados: MP4, MOV, AVI (máx. 100MB)
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Barra de Progreso */}
+        {isUploading && (
+          <div className="w-full bg-white/5 rounded-full h-2">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        )}
+
+        {/* Botón de Subida */}
+        <button
+          onClick={handleUpload}
+          disabled={!selectedFile || !title || !description || isUploading}
+          className={`w-full py-3 rounded-xl font-bold transition-colors ${
+            !selectedFile || !title || !description || isUploading
+              ? 'bg-gray-500/50 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600'
+          }`}
+        >
+          {isUploading ? 'Subiendo...' : 'Subir Video'}
         </button>
-      </form>
-    </div>
+      </div>
+    </motion.div>
   );
-} 
+}; 

@@ -11,17 +11,24 @@
   "dependencies": {
     "@lens-protocol/client": "^2.3.2",
     "@lens-protocol/react": "^2.3.2",
+    "@lens-protocol/react-web": "^2.3.2",
     "@tanstack/react-query": "^5.76.1",
+    "@types/react-dropzone": "^4.2.2",
     "autoprefixer": "^10.4.18",
     "connectkit": "^1.9.0",
+    "framer-motion": "^12.12.1",
     "next": "14.1.0",
     "pino-pretty": "^10.3.1",
     "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-dropzone": "^14.3.8",
+    "react-tsparticles": "^2.12.2",
     "tailwindcss": "^3.4.1",
+    "tsparticles-slim": "^2.12.0",
     "viem": "^2.21.53",
-    "wagmi": "^2.15.3"
+    "wagmi": "^2.15.3",
+    "web3.storage": "^4.5.5"
   },
   "devDependencies": {
     "@types/node": "^20",
